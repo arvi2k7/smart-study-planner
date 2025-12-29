@@ -2,41 +2,55 @@
  * IMPORTS
  ************************************************************/
 
-// Firebase core services
 import { auth, db } from "./firebase.js";
 
-// Firebase Auth
 import {
     onAuthStateChanged,
     signOut
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// Firestore (READ ONLY for now)
 import {
     collection,
     getDocs,
     addDoc,
     serverTimestamp
-} from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/************************************************************
+ * GLOBAL STATE
+ ************************************************************/
+
+let studySessions = [];
+const loadingOverlay = document.getElementById("loading-overlay");
+
+function showToast(message) {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = "toast success";
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add("removing");
+        setTimeout(() => toast.remove(), 250);
+    }, 2000);
+}
 
 /************************************************************
  * AUTH GUARD + INITIAL LOAD
  ************************************************************/
 
-let studySessions = []; // Source of truth (loaded from Firestore)
-
-// Protect dashboard + load user data
 onAuthStateChanged(auth, async user => {
     if (!user) {
         window.location.href = "login.html";
         return;
     }
 
-    // User is logged in → load data
     await loadStudySessions(user.uid);
 
-    // Render everything AFTER data loads
     renderStudySessions();
     renderStreak();
     renderActiveRecall();
@@ -45,6 +59,10 @@ onAuthStateChanged(auth, async user => {
     renderDifficultyChart();
     renderSubjectChart();
     renderExamCountdown();
+
+    if (loadingOverlay) {
+        loadingOverlay.style.display = "none";
+    }
 });
 
 /************************************************************
@@ -54,12 +72,10 @@ onAuthStateChanged(auth, async user => {
 async function loadStudySessions(uid) {
     studySessions = [];
 
-    const sessionsRef =
-        collection(db, "users", uid, "studySessions");
+    const ref = collection(db, "users", uid, "studySessions");
+    const snap = await getDocs(ref);
 
-    const snapshot = await getDocs(sessionsRef);
-
-    snapshot.forEach(doc => {
+    snap.forEach(doc => {
         studySessions.push(doc.data());
     });
 }
@@ -93,13 +109,16 @@ if (logoutBtn) {
 }
 
 /************************************************************
- * FORM (WRITE COMING NEXT PHASE)
- * ⚠️ For now, form is DISABLED logically
+ * SAVE STUDY SESSION (FIRESTORE WRITE)
  ************************************************************/
 
 if (form) {
     form.addEventListener("submit", async e => {
         e.preventDefault();
+
+        const saveBtn = form.querySelector("button[type='submit']");
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
 
         const user = auth.currentUser;
         if (!user) return;
@@ -112,16 +131,14 @@ if (form) {
             createdAt: serverTimestamp()
         };
 
-        // Save to Firestore
         await addDoc(
             collection(db, "users", user.uid, "studySessions"),
             session
         );
 
-        // Update local state
         studySessions.push(session);
+        showToast("Study session saved");
 
-        // Re-render UI
         renderStudySessions();
         renderStreak();
         renderActiveRecall();
@@ -131,18 +148,31 @@ if (form) {
         renderSubjectChart();
 
         form.reset();
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Session";
         dateInput.value = new Date().toISOString().split("T")[0];
     });
 }
 
 /************************************************************
- * HISTORY PAGE
+ * STUDY HISTORY
  ************************************************************/
 
 function renderStudySessions() {
     if (!studyList) return;
 
     studyList.innerHTML = "";
+
+    if (studySessions.length === 0) {
+        studyList.innerHTML = `
+            <li class="empty-state">
+                No study sessions yet.<br>
+                Start by logging your first session.
+            </li>
+        `;
+        return;
+    }
+
     studySessions.forEach(s => {
         const li = document.createElement("li");
         li.textContent = `${s.subject} • ${s.chapter} • ${s.date}`;
@@ -187,6 +217,7 @@ function renderActiveRecall() {
     if (!list) return;
 
     list.innerHTML = "";
+    let hasRecalls = false;
 
     const latest = {};
     studySessions.forEach(s => {
@@ -206,6 +237,8 @@ function renderActiveRecall() {
         const diff = Math.floor((today - studied) / 86400000);
         if (diff < 10) return;
 
+        hasRecalls = true;
+
         const li = document.createElement("li");
         li.className = "notification";
 
@@ -214,8 +247,8 @@ function renderActiveRecall() {
         li.innerHTML = `
             <div class="dot ${color}"></div>
             <div class="recall-text">
-                ${s.subject} – ${s.chapter}
-                · last studied ${diff} days ago
+                ${s.subject} – ${s.chapter}<br>
+                <span class="muted">${diff} days ago</span>
             </div>
             <button class="done-btn">Done</button>
         `;
@@ -224,36 +257,45 @@ function renderActiveRecall() {
             li.classList.add("removing");
 
             setTimeout(async () => {
-            const user = auth.currentUser;
-            if (!user) return;
+                const user = auth.currentUser;
+                if (!user) return;
 
-            const revision = {
-                subject: s.subject,
-                chapter: s.chapter,
-                difficulty: s.difficulty || 5,
-                date: new Date().toISOString().split("T")[0],
-                createdAt: serverTimestamp()
-            };
+                const revision = {
+                    subject: s.subject,
+                    chapter: s.chapter,
+                    difficulty: s.difficulty || 5,
+                    date: new Date().toISOString().split("T")[0],
+                    createdAt: serverTimestamp()
+                };
 
-            await addDoc(
-                collection(db, "users", user.uid, "studySessions"),
-                revision
-            );
+                await addDoc(
+                    collection(db, "users", user.uid, "studySessions"),
+                    revision
+                );
 
-            studySessions.push(revision);
+                studySessions.push(revision);
 
-            renderActiveRecall();
-            renderStreak();
-            renderTodaysFocus();
-            renderStudyChart();
-            renderDifficultyChart();
-            renderSubjectChart();
-        }, 350);
+                renderActiveRecall();
+                renderStreak();
+                renderTodaysFocus();
+                renderStudyChart();
+                renderDifficultyChart();
+                renderSubjectChart();
+                showToast("Recall completed");
+            }, 300);
         };
-
 
         list.appendChild(li);
     });
+
+    if (!hasRecalls) {
+        list.innerHTML = `
+            <li class="empty-state">
+                No recalls due 🎉<br>
+                You’re on track.
+            </li>
+        `;
+    }
 }
 
 /************************************************************
@@ -275,9 +317,6 @@ function renderTodaysFocus() {
     todaySessionsEl.textContent =
         `Study sessions today: ${sessionsToday}`;
 
-    todaySessionsEl.style.color =
-        sessionsToday >= 2 ? "#22c55e" : "";
-
     let dueToday = 0;
     studySessions.forEach(s => {
         const diff =
@@ -290,35 +329,24 @@ function renderTodaysFocus() {
 }
 
 /************************************************************
- * EXAM COUNTDOWN (still local, ok for now)
+ * EXAM COUNTDOWN
  ************************************************************/
 
 function renderExamCountdown() {
     if (!examCountdown) return;
 
-    examCountdown.classList.remove(
-        "countdown-warning",
-        "countdown-danger"
-    );
-
     const saved = localStorage.getItem("examDate");
     if (!saved) {
-        examCountdown.textContent = "No exam set";
+        examCountdown.innerHTML =
+            `<span class="muted">No exam date set</span>`;
         return;
     }
 
     const diff =
         Math.ceil((new Date(saved) - new Date()) / 86400000);
 
-    if (diff === 0) {
-        examCountdown.textContent = "Exam is today 🚨";
-        examCountdown.classList.add("countdown-danger");
-    } else if (diff <= 7) {
-        examCountdown.textContent = `${diff} days remaining`;
-        examCountdown.classList.add("countdown-warning");
-    } else {
-        examCountdown.textContent = `${diff} days remaining`;
-    }
+    examCountdown.textContent =
+        diff === 0 ? "Exam is today 🚨" : `${diff} days remaining`;
 }
 
 if (examDateInput) {
@@ -351,18 +379,17 @@ function renderStudyChart() {
             weekday: "short"
         }));
 
-        const count = studySessions.filter(s => {
-            const sd = new Date(s.date);
-            sd.setHours(0,0,0,0);
-            return sd.getTime() === d.getTime();
-        }).length;
-
-        counts.push(count);
+        counts.push(
+            studySessions.filter(s => {
+                const sd = new Date(s.date);
+                sd.setHours(0,0,0,0);
+                return sd.getTime() === d.getTime();
+            }).length
+        );
     }
 
-    if (window.studyChartInstance) {
+    if (window.studyChartInstance)
         window.studyChartInstance.destroy();
-    }
 
     window.studyChartInstance = new Chart(canvas, {
         type: "bar",
@@ -403,18 +430,15 @@ function renderDifficultyChart() {
             return sd.getTime() === d.getTime();
         });
 
-        if (sessions.length === 0) values.push(null);
-        else {
-            const avg =
-                sessions.reduce((sum, s) => sum + Number(s.difficulty), 0)
-                / sessions.length;
-            values.push(avg.toFixed(1));
-        }
+        values.push(
+            sessions.length
+                ? (sessions.reduce((a, s) => a + s.difficulty, 0) / sessions.length).toFixed(1)
+                : null
+        );
     }
 
-    if (window.difficultyChartInstance) {
+    if (window.difficultyChartInstance)
         window.difficultyChartInstance.destroy();
-    }
 
     window.difficultyChartInstance = new Chart(canvas, {
         type: "line",
@@ -430,7 +454,7 @@ function renderDifficultyChart() {
         },
         options: {
             plugins: { legend: { display: false } },
-            scales: { y: { min: 0, max: 10, ticks: { stepSize: 1 } } }
+            scales: { y: { min: 0, max: 10 } }
         }
     });
 }
@@ -444,9 +468,8 @@ function renderSubjectChart() {
         counts[s.subject] = (counts[s.subject] || 0) + 1;
     });
 
-    if (window.subjectChartInstance) {
+    if (window.subjectChartInstance)
         window.subjectChartInstance.destroy();
-    }
 
     window.subjectChartInstance = new Chart(canvas, {
         type: "pie",
