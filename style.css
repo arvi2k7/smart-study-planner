@@ -318,14 +318,100 @@ form button {
     background: #1f2933;
 }
 
-/* Difficulty pill */
+/* ---------- History Page Layout ---------- */
+
+.page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+.page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.back-link {
+    color: #8b5cf6;
+    font-size: 14px;
+    text-decoration: none;
+    width: fit-content;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* ---------- History Card ---------- */
+
+.history-card {
+    background: linear-gradient(
+        180deg,
+        #0f172a,
+        #020617
+    );
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+}
+
+/* ---------- History Table ---------- */
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.history-table thead {
+    background: #020617;
+}
+
+.history-table th {
+    text-align: left;
+    padding: 14px 16px;
+    font-weight: 600;
+    color: #9ca3af;
+    border-bottom: 1px solid #1f2937;
+}
+
+.history-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #111827;
+    color: #e5e7eb;
+}
+
+.history-table tbody tr:hover {
+    background: #020617;
+}
+
+/* ---------- Difficulty Pill ---------- */
 
 .difficulty-pill {
     display: inline-block;
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 999px;
-    background: #1f2933;
+    background: #111827;
     color: #fbbf24;
     font-weight: 600;
     font-size: 12px;
+}
+
+/* ---------- Empty State ---------- */
+
+.empty-state {
+    text-align: center;
+    padding: 32px;
+    color: #9ca3af;
+    font-size: 14px;
 }
