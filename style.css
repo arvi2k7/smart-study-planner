@@ -287,3 +287,45 @@ form button {
 #logout-btn:active {
     transform: scale(0.97);
 }
+
+/* ---------- History Table ---------- */
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    color: #e5e7eb;
+}
+
+.history-table thead {
+    background: #111827;
+}
+
+.history-table th {
+    text-align: left;
+    padding: 12px 14px;
+    font-weight: 600;
+    color: #9ca3af;
+    border-bottom: 1px solid #374151;
+}
+
+.history-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #1f2933;
+}
+
+.history-table tbody tr:hover {
+    background: #1f2933;
+}
+
+/* Difficulty pill */
+
+.difficulty-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #1f2933;
+    color: #fbbf24;
+    font-weight: 600;
+    font-size: 12px;
+}

@@ -165,18 +165,31 @@ function renderStudySessions() {
 
     if (studySessions.length === 0) {
         studyList.innerHTML = `
-            <li class="empty-state">
-                No study sessions yet.<br>
-                Start by logging your first session.
-            </li>
+            <tr>
+                <td colspan="4" class="empty-state">
+                    No study sessions yet.<br>
+                    Start by logging your first session.
+                </td>
+            </tr>
         `;
         return;
     }
 
     studySessions.forEach(s => {
-        const li = document.createElement("li");
-        li.textContent = `${s.subject} • ${s.chapter} • ${s.date}`;
-        studyList.appendChild(li);
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${s.subject}</td>
+            <td>${s.chapter}</td>
+            <td>
+                <span class="difficulty-pill">
+                    ${s.difficulty}
+                </span>
+            </td>
+            <td>${s.date}</td>
+        `;
+
+        studyList.appendChild(tr);
     });
 }
 
