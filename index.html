@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Study Planner</title>
+
+    <!-- Font Awesome icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<button id="logout-btn" style="float:right;">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    Logout
+</button>
+
+<body>
+
+<h1>
+    <i class="fa-solid fa-brain"></i>
+    Smart Study Planner
+</h1>
+
+<div class="dashboard">
+
+    <!-- LEFT PANEL -->
+    <div class="main-panel">
+
+        <h2>
+            <i class="fa-solid fa-pen-to-square"></i>
+            Log Study Session
+        </h2>
+
+        <!-- Study input form -->
+        <form id="study-form">
+            <label>
+                Subject
+                <input type="text" id="subject" required>
+            </label>
+
+            <label>
+                Chapter
+                <input type="text" id="chapter" required>
+            </label>
+
+            <label>
+                Difficulty (1–10)
+                <input type="number" id="difficulty" min="1" max="10" required>
+            </label>
+
+            <label>
+                Date Studied
+                <input type="date" id="study-date" required>
+            </label>
+
+            <button type="submit">
+                <i class="fa-solid fa-plus"></i>
+                Save Session
+            </button>
+        </form>
+
+        <!-- Study streak -->
+        <div class="card">
+            <h3>
+                <i class="fa-solid fa-fire"></i>
+                Study Streak
+            </h3>
+            <p id="streak-count">0 days</p>
+        </div>
+
+        <!-- Today's focus -->
+        <div class="card">
+            <h3>
+                <i class="fa-solid fa-bullseye"></i>
+                Today’s Focus
+            </h3>
+            <p id="today-recalls">Recalls due today: 0</p>
+            <p id="today-sessions">Study sessions today: 0</p>
+        </div>
+
+        <br>
+
+        <div class="card">
+            <h3>
+                <i class="fa-solid fa-chart-column"></i>
+                    Study Frequency (Last 7 Days)
+            </h3>
+
+            <canvas id="studyChart" height="120"></canvas>
+        </div>
+
+        <br>
+
+        <div class="card">
+            <h3>
+                <i class="fa-solid fa-chart-line"></i>
+                    Difficulty Trend (Last 7 Days)
+            </h3>
+
+            <canvas id="difficultyChart" height="120"></canvas>
+        </div>
+
+        <br>
+
+        <div class="card">
+            <h3>
+                <i class="fa-solid fa-chart-pie"></i>
+                    Subject Distribution
+            </h3>
+
+            <canvas id="subjectChart" height="140"></canvas>
+        </div>
+
+        <br>
+
+        <a href="history.html" class="secondary-btn">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            View Study History
+        </a>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="notifications-panel">
+
+        <h2>
+            <i class="fa-solid fa-bell"></i>
+            Notifications
+        </h2>
+
+        <!-- Exam countdown -->
+        <div class="card">
+            <h3>
+                <i class="fa-solid fa-calendar-days"></i>
+                Next Exam
+            </h3>
+            <input type="date" id="exam-date">
+            <p id="exam-countdown">No exam set</p>
+        </div>
+
+        <h3>Active Recall Due</h3>
+        <ul id="recall-list"></ul>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script type="module" src="script.js"></script>
+
+</body>
+</html>

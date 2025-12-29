@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up | Smart Study Planner</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>
+    <i class="fa-solid fa-brain"></i>
+    Smart Study Planner
+</h1>
+
+<div class="card" style="max-width:420px;margin:auto;">
+    <h2>Create Account</h2>
+
+    <form id="signup-form">
+        <label>
+            Email
+            <input type="email" id="signup-email" required>
+        </label>
+
+        <label>
+            Password
+            <input type="password" id="signup-password" required>
+        </label>
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <p style="margin-top:12px;font-size:14px;">
+        Already have an account?
+        <a href="login.html" class="secondary-btn">Login</a>
+    </p>
+</div>
+
+<script type="module" src="auth.js"></script>
+
+</body>
+</html>
