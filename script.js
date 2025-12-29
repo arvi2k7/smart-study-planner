@@ -51,7 +51,10 @@ onAuthStateChanged(auth, async user => {
 
     await loadStudySessions(user.uid);
 
+    // Always render history if present
     renderStudySessions();
+
+    // Dashboard-only renders (safe guards already exist)
     renderStreak();
     renderActiveRecall();
     renderTodaysFocus();
