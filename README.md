@@ -107,27 +107,3 @@ Collaborative study groups
 Author
 
 Built by Arvind
-
-
----
-
-## 3.3 Small but important edits
-
-Do these quick edits:
-
-- Replace `YOUR_USERNAME`
-- Add your **Firebase Hosting URL**
-- Keep your name as **Arvi** (that’s fine)
-
-Then **save**.
-
----
-
-## 3.4 Commit the README
-
-In Terminal:
-
-```bash
-git add README.md
-git commit -m "Add project README"
-git push
